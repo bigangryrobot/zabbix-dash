@@ -1,9 +1,12 @@
-{ HTTP } = require 'meteor/http'
+{ Meteor }  = require 'meteor/meteor'
+{ HTTP }    = require 'meteor/http'
 
-ZABBIX_API_URL = 'http://zabbix.iqt.ictu/api_jsonrpc.php'
-ZABBIX_HOST_ID = 10084
-ZABBIX_USER = ''
-ZABBIX_USER_PASSWORD = ''
+
+
+ZABBIX_API_URL = Meteor.settings.zabbix.api_url
+ZABBIX_HOST_ID = Meteor.settings.zabbix.host_id
+ZABBIX_USER = Meteor.settings.zabbix.user
+ZABBIX_USER_PASSWORD = Meteor.settings.zabbix.password
 
 module.exports = ->
   _authToken = null
