@@ -1,0 +1,27 @@
+div.serviceTotals {
+  font-family: 'Open Sans', sans-serif;
+  font-weight: 300;
+  text-align: center;
+  font-size: 30px;
+  border-bottom: 1px solid black;
+}
+
+div.serviceTotals .count {
+  font-size: 50px;
+  font-weight: 400;
+}
+
+div.allServices {
+  color: #03B8F7;
+  border-bottom-color: #03B8F7;
+}
+
+div.failingServices {
+  color: #D40000;
+  border-bottom-color: #D40000;
+}
+
+div.okServices {
+  color: #59DB8F;
+  border-bottom-color: #59DB8F;
+}
