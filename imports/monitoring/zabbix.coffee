@@ -3,7 +3,7 @@
 
 
 
-ZABBIX_API_URL = Meteor.settings.zabbix.api_url
+ZABBIX_API_URL = "#{Meteor.settings.zabbix.url}#{Meteor.settings.zabbix.api_url}"
 ZABBIX_HOST_ID = Meteor.settings.zabbix.host_id
 ZABBIX_USER = Meteor.settings.zabbix.user
 ZABBIX_USER_PASSWORD = Meteor.settings.zabbix.password
@@ -27,6 +27,13 @@ module.exports = ->
     call 'httptest.get',
       output: ['name']
       selectSteps: 'extend'
+
+  getWebScenarioByName: (name) ->
+    call 'httptest.get',
+      output: ['name']
+      selectSteps: 'extend'
+      search:
+        name: name
 
   deleteWebScenario: (id) ->
     call 'httptest.delete', [id]

@@ -1,5 +1,6 @@
 React                       = require 'react'
 _                           = require 'lodash'
+TimeAgo                     = require('react-timeago').default
 { createContainer }         = require 'meteor/react-meteor-data'
 ReactGridLayout             = require 'react-grid-layout'
 Services                    = require '/imports/collections/services.coffee'
@@ -13,11 +14,14 @@ defaultRglLayout = [
 ]
 
 createHttpWidget = (service) ->
+  console.log service
   parseUrl = (key) -> (/\[Check (.+)\]/.exec key)[1]
   <div key={service._id} className="widget service">
     <div className="inner">
       <h3>HTTP Check failed</h3>
-      <a target="_blank" href="#{parseUrl service.key_}">{parseUrl service.key_}</a>
+      <a target="_blank" href="#{parseUrl service.key_}">{parseUrl service.key_}</a> <br />
+      <div className='lastChecked'>Last checked: <TimeAgo date={new Date(TimeSync.serverTime(service.updatedOn))} /></div>
+      <a className="externalLink" href={service.zabbixUrl} target='_blank'><i className="material-icons">open_in_new</i></a>
     </div>
   </div>
 
@@ -27,14 +31,15 @@ App = React.createClass
   getRglLayout: ->
     x = -3
     p = @props.failingServices.map (service) ->
-      i: service._id, x: (x += 3), y: 2, w: 3, h: 2, static: false
+      if (x += 3) > 9 then x = 0
+      i: "#{service._id}", x: x, y: 2, w: 3, h: 2, static: false
     _.union defaultRglLayout, p
 
   calcRootClass: -> if @props.failingServiceCount > 0 then 'failing' else 'ok'
 
   render: ->
     layout = @getRglLayout()
-    console.log layout
+    console.log 'layout', layout
     staticComponents = [
       <div className='widget serviceTotals allServices' key='allServices'>Monitored Services<div className="count">{@props.serviceCount}</div></div>
       <div className='widget serviceTotals okServices' key='servicesUp'>Up &amp; Running<div className="count">{@props.okServiceCount}</div></div>

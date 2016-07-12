@@ -1,13 +1,50 @@
 /*
-	EmojiSymbols Font (c)blockworks - Kenichi Kaneko
-	http://emojisymbols.com/
-	*/
-	@font-face {
-		font-family: "EmojiSymbols";
-		src: url('/EmojiSymbols-Regular.woff') format('woff');
-		text-decoration: none;
-		font-style: normal;
-	}
+EmojiSymbols Font (c)blockworks - Kenichi Kaneko
+http://emojisymbols.com/
+*/
+@font-face {
+	font-family: "EmojiSymbols";
+	src: url('/fonts/EmojiSymbols-Regular.woff') format('woff');
+	text-decoration: none;
+	font-style: normal;
+}
+
+@font-face {
+  font-family: 'Material Icons';
+  font-style: normal;
+  font-weight: 400;
+  src: url(/fonts/MaterialIcons-Regular.eot); /* For IE6-8 */
+  src: local('Material Icons'),
+       local('MaterialIcons-Regular'),
+       url(/fonts/MaterialIcons-Regular.woff2) format('woff2'),
+       url(/fonts/MaterialIcons-Regular.woff) format('woff'),
+       url(/fonts/MaterialIcons-Regular.ttf) format('truetype');
+}
+
+.material-icons {
+  font-family: 'Material Icons';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;  /* Preferred icon size */
+  display: inline-block;
+  line-height: 1;
+  text-transform: none;
+  letter-spacing: normal;
+  word-wrap: normal;
+  white-space: nowrap;
+  direction: ltr;
+
+  /* Support for all WebKit browsers. */
+  -webkit-font-smoothing: antialiased;
+  /* Support for Safari and Chrome. */
+  text-rendering: optimizeLegibility;
+
+  /* Support for Firefox. */
+  -moz-osx-font-smoothing: grayscale;
+
+  /* Support for IE. */
+  font-feature-settings: 'liga';
+}
 
 html, body {
   font-family: 'Open Sans', sans-serif;
@@ -71,6 +108,8 @@ div.widget {
 }
 div.widget .inner {
   padding: 5px;
+  height: 100%;
+  position: relative;
 }
 
 div.widget.service h3 {
@@ -80,7 +119,18 @@ div.widget.service h3 {
 div.widget.service a {
   font-size: 14px;
 }
-
+div.widget.service .lastChecked {
+  font-size: 14px;
+  position: absolute;
+  bottom: 12px;
+}
+div.widget.service .externalLink {
+  position: absolute;
+  right: 5px;
+  top: 5px;
+  font-size: 20px;
+  color: #03B8F7;
+}
 
 div.okPlaceholder {
   position: absolute;
