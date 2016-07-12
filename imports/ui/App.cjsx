@@ -13,16 +13,27 @@ defaultRglLayout = [
   {i: 'servicesDown', x: 8, y: 0, w: 4, h: 2, static: true}
 ]
 
+createWidget = (check) ->
+  console.log check
+  <div key={check._id} className="widget">
+    {switch check.type
+      when 'web.test' then createHttpWidget check
+      when 'trigger' then createTriggerWidget check
+      else <div>Dont know how to render check type {checl.type}</div>
+    }
+  </div>
+
+
+createTriggerWidget = (trigger) ->
+  <div>{trigger.description}</div>
+
 createHttpWidget = (service) ->
-  console.log service
   parseUrl = (key) -> (/\[Check (.+)\]/.exec key)[1]
-  <div key={service._id} className="widget service">
-    <div className="inner">
-      <h3>HTTP Check failed</h3>
-      <a target="_blank" href="#{parseUrl service.key_}">{parseUrl service.key_}</a> <br />
-      <div className='lastChecked'>Last checked: <TimeAgo date={new Date(TimeSync.serverTime(service.updatedOn))} /></div>
-      <a className="externalLink" href={service.zabbixUrl} target='_blank'><i className="material-icons">open_in_new</i></a>
-    </div>
+  <div className="inner service">
+    <h3>HTTP Check failed</h3>
+    <a target="_blank" href="#{parseUrl service.key_}">{parseUrl service.key_}</a> <br />
+    <div className='lastChecked'>Last checked: <TimeAgo date={new Date(TimeSync.serverTime(service.updatedOn))} /></div>
+    <a className="externalLink" href={service.zabbixUrl} target='_blank'><i className="material-icons">open_in_new</i></a>
   </div>
 
 App = React.createClass
@@ -41,13 +52,13 @@ App = React.createClass
     layout = @getRglLayout()
     console.log 'layout', layout
     staticComponents = [
-      <div className='widget serviceTotals allServices' key='allServices'>Monitored Services<div className="count">{@props.serviceCount}</div></div>
-      <div className='widget serviceTotals okServices' key='servicesUp'>Up &amp; Running<div className="count">{@props.okServiceCount}</div></div>
+      <div className='widget serviceTotals allServices' key='allServices'>Total Checks<div className="count">{@props.serviceCount}</div></div>
+      <div className='widget serviceTotals okServices' key='servicesUp'>Passing<div className="count">{@props.okServiceCount}</div></div>
       <div className='widget serviceTotals failingServices' key='servicesDown'>Failing<div className="count">{@props.failingServiceCount}</div></div>
     ]
     <div className="root #{@calcRootClass()}">
       <RGL className="layout" layout=layout cols=12 rowHeight=50>
-        {_.union staticComponents, @props.failingServices.map createHttpWidget }
+        {_.union staticComponents, @props.failingServices.map createWidget }
       </RGL>
         {if @props.failingServiceCount > 0
           <div className="emoji failPlaceholder">👎</div>
@@ -58,8 +69,8 @@ App = React.createClass
 
 
 module.exports = createContainer (props) ->
-  serviceCount: Services.find(type: 'web.test').count()
-  okServiceCount: Services.find(type: 'web.test', value:'0').count()
-  failingServiceCount: Services.find(type: 'web.test', value: {$ne: '0'}).count()
-  failingServices: Services.find(type: 'web.test', value: {$ne: '0'}).fetch()
+  serviceCount: Services.find().count()
+  okServiceCount: Services.find(value:'0').count()
+  failingServiceCount: Services.find(value: {$ne: '0'}).count()
+  failingServices: Services.find(value: {$ne: '0'}).fetch()
 , App

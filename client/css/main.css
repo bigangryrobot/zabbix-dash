@@ -112,19 +112,19 @@ div.widget .inner {
   position: relative;
 }
 
-div.widget.service h3 {
+div.widget .service h3 {
   margin: 5px 0px;
   font-size: 18px;
 }
-div.widget.service a {
+div.widget .service a {
   font-size: 14px;
 }
-div.widget.service .lastChecked {
+div.widget .service .lastChecked {
   font-size: 14px;
   position: absolute;
   bottom: 12px;
 }
-div.widget.service .externalLink {
+div.widget .service .externalLink {
   position: absolute;
   right: 5px;
   top: 5px;
