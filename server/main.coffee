@@ -32,13 +32,16 @@ getData = ->
         updatedOn: new Date(item.lastclock * 1000)
         zabbixUrl: "#{Meteor.settings.zabbix.url}/httpdetails.php?httptestid=#{scenario?.httptestid}"
 
-  triggers = (zabbix.call 'trigger.get', {expandDescription: true, expandExpression:true, search: {status: 0}}).result
+  triggers = (zabbix.call 'trigger.get', {expandDescription: true, expandExpression:true}).result
   for trigger in triggers
-    if trigger.lastchange > 0 # triggers with a lastchange of 0 are not really in use
+    # triggers with a lastchange of 0 are not really in use
+    # triggers with status is 1 are disabled.
+    if trigger.lastchange isnt '0' and trigger.status isnt '1'
       l = (i) -> if i < 10 then "0#{i}" else i
       d = new Date(parseInt(trigger.lastchange) * 1000)
       date="#{d.getFullYear()}#{l d.getMonth()+1}#{l d.getDate()}#{l d.getHours()}#{l d.getMinutes()}00"
       host =  /(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})/.exec "#{trigger.description}#{trigger.expression}"
+
       Services.upsert {type: 'trigger', triggerid: trigger.triggerid},
         type: 'trigger'
         triggerid: trigger.triggerid
@@ -48,8 +51,18 @@ getData = ->
         updatedOn: d
         host: host?[0]
         zabbixUrl: "#{Meteor.settings.zabbix.url}/events.php?filter_set=1&triggerid=#{trigger.triggerid}&period=60&stime=#{date}"
+    else if trigger.status is '1'
+      # remove disabled triggers
+      Services.remove {type: 'trigger', triggerid: trigger.triggerid}
+
 
   console.log "getData::done"
 
 Meteor.setTimeout getData, 500
 Meteor.setInterval getData, 60000
+
+# zabbix = new Zabbix()
+# zabbix.login()
+#
+# console.log 'wiee!'
+# console.dir zabbix.call 'item.get', {search: key_: 'vfs.fs.size[/local/data,pfree]'}
