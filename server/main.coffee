@@ -7,7 +7,6 @@ getData = ->
   zabbix = new Zabbix()
   zabbix.login()
   res = zabbix.getItems 'web.test.fail', 'Zabbix server'
-  x = _.filter res.result, (item) -> item.lastvalue isnt '0'
 
   # find all services that should be deleted
   allCurrentServiceKeys = Services.find(type: 'web.test').map (s) -> s.key_
@@ -32,38 +31,25 @@ getData = ->
         httptestid: scenario?.httptestid
         updatedOn: new Date(item.lastclock * 1000)
         zabbixUrl: "#{Meteor.settings.zabbix.url}/httpdetails.php?httptestid=#{scenario?.httptestid}"
+
+  triggers = (zabbix.call 'trigger.get', {expandDescription: true, expandExpression:true, search: {status: 0}}).result
+  for trigger in triggers
+    if trigger.lastchange > 0 # triggers with a lastchange of 0 are not really in use
+      l = (i) -> if i < 10 then "0#{i}" else i
+      d = new Date(parseInt(trigger.lastchange) * 1000)
+      date="#{d.getFullYear()}#{l d.getMonth()+1}#{l d.getDate()}#{l d.getHours()}#{l d.getMinutes()}00"
+      host =  /(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})/.exec "#{trigger.description}#{trigger.expression}"
+      Services.upsert {type: 'trigger', triggerid: trigger.triggerid},
+        type: 'trigger'
+        triggerid: trigger.triggerid
+        description: trigger.description
+        expression: trigger.expression
+        value: trigger.value
+        updatedOn: d
+        host: host?[0]
+        zabbixUrl: "#{Meteor.settings.zabbix.url}/events.php?filter_set=1&triggerid=#{trigger.triggerid}&period=60&stime=#{date}"
+
   console.log "getData::done"
 
-# Meteor.setTimeout getData, 500
-# Meteor.setInterval getData, 60000
-
-zabbix = new Zabbix()
-zabbix.login()
-
-lastUpdatedTrigger = Services.findOne {type: 'trigger'}, sort: updatedOn: -1
-console.log 'lastUpdatedTrigger', lastUpdatedTrigger
-
-eventSearchObject = {object: 0, sortfield: 'clock'}
-if lastUpdatedTrigger
-  eventSearchObject.time_from = lastUpdatedTrigger.updatedOn.getTime() / 1000
-
-console.log 'search', eventSearchObject
-x = zabbix.call 'event.get', eventSearchObject
-x = x.result #_.filter x.result, (e) -> e.objectid is "16513"
-x = x.map (e) ->
-  if trigger = Services.findOne {type: 'trigger', triggerid: e.objectid}
-    console.log 'update trigger', e.objectid
-    Services.update {_id : trigger._id},
-      $set:
-        value: e.value
-        updatedOn: new Date(e.clock * 1000)
-  else
-    console.log 'insert trigger', e.objectid
-    trigger = (zabbix.call 'trigger.get', {triggerids: e.objectid})?.result?[0]
-    if trigger
-      Services.insert
-        type: 'trigger'
-        triggerid: e.objectid
-        description: trigger.description
-        value: e.value
-        updatedOn: new Date(e.clock * 1000)
+Meteor.setTimeout getData, 500
+Meteor.setInterval getData, 60000
