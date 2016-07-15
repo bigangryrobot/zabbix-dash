@@ -15,7 +15,7 @@ defaultRglLayout = [
 
 createWidget = (check) ->
   console.log check
-  <div key={check._id} className="widget">
+  <div key={check._id} className="widget failing">
     {switch check.type
       when 'web.test' then createHttpWidget check
       when 'trigger' then createTriggerWidget check
@@ -25,7 +25,15 @@ createWidget = (check) ->
 
 
 createTriggerWidget = (trigger) ->
-  <div>{trigger.description}</div>
+  <div className="inner trigger">
+    {if not trigger.host or trigger.description.match trigger.host
+      <h3>{trigger.description}</h3>
+    else
+      <h3>{trigger.host}: {trigger.description}</h3>
+    }
+    <div className='lastChecked'>Since: <TimeAgo date={new Date(TimeSync.serverTime(trigger.updatedOn))} /></div>
+    <a className="externalLink" href={trigger.zabbixUrl} target='_blank'><i className="material-icons">open_in_new</i></a>
+  </div>
 
 createHttpWidget = (service) ->
   parseUrl = (key) -> (/\[Check (.+)\]/.exec key)[1]
@@ -41,16 +49,17 @@ App = React.createClass
 
   getRglLayout: ->
     x = -3
+    y = 2
     p = @props.failingServices.map (service) ->
-      if (x += 3) > 9 then x = 0
-      i: "#{service._id}", x: x, y: 2, w: 3, h: 2, static: false
+      if (x += 3) > 9 then x = 0; y += 2;
+      i: "#{service._id}", x: x, y: y, w: 3, h: 2, static: false
     _.union defaultRglLayout, p
 
   calcRootClass: -> if @props.failingServiceCount > 0 then 'failing' else 'ok'
 
   render: ->
+    console.log @props.failingServices
     layout = @getRglLayout()
-    console.log 'layout', layout
     staticComponents = [
       <div className='widget serviceTotals allServices' key='allServices'>Total Checks<div className="count">{@props.serviceCount}</div></div>
       <div className='widget serviceTotals okServices' key='servicesUp'>Passing<div className="count">{@props.okServiceCount}</div></div>
@@ -60,11 +69,11 @@ App = React.createClass
       <RGL className="layout" layout=layout cols=12 rowHeight=50>
         {_.union staticComponents, @props.failingServices.map createWidget }
       </RGL>
-        {if @props.failingServiceCount > 0
-          <div className="emoji failPlaceholder">👎</div>
-        else
-          <div className="emoji okPlaceholder">👍</div>
-        }
+      {if @props.failingServiceCount > 0
+        <div className="emoji failPlaceholder"></div>
+      else
+        <div className="emoji okPlaceholder">👍</div>
+      }
     </div>
 
 
@@ -72,5 +81,5 @@ module.exports = createContainer (props) ->
   serviceCount: Services.find().count()
   okServiceCount: Services.find(value:'0').count()
   failingServiceCount: Services.find(value: {$ne: '0'}).count()
-  failingServices: Services.find(value: {$ne: '0'}).fetch()
+  failingServices: Services.find({value: {$ne: '0'}}, sort: updatedOn: -1).fetch()
 , App
