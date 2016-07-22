@@ -15,7 +15,7 @@ getData = ->
   serviceKeysThatShouldBeDeleted.map (key) ->
     Services.remove {key_: key, type: 'web.test'}
 
-  parseUrl = (key) -> (/\[(Check .+)\]/.exec key)[1]
+  parseScenarioName = (key) -> (/\[(.+)\]/.exec key)[1]
   for item in res.result
     if service = Services.findOne { key_: item.key_, type: 'web.test' }
       Services.update {_id: service._id},
@@ -23,7 +23,7 @@ getData = ->
           value: item.lastvalue
           updatedOn: new Date(item.lastclock * 1000)
     else
-      scenario = (zabbix.getWebScenarioByName parseUrl item.key_).result?[0]
+      scenario = (zabbix.getWebScenarioByName parseScenarioName item.key_).result?[0]
       Services.insert
         type: 'web.test'
         key_: item.key_
