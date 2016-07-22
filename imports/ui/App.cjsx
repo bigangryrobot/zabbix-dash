@@ -36,10 +36,10 @@ createTriggerWidget = (trigger) ->
   </div>
 
 createHttpWidget = (service) ->
-  parseUrl = (key) -> (/\[Check (.+)\]/.exec key)[1]
+  parseUrl = (key) -> (/\[(.+)\]/.exec key)?[1]
   <div className="inner service">
     <h3>HTTP Check failed</h3>
-    <a target="_blank" href="#{parseUrl service.key_}">{parseUrl service.key_}</a> <br />
+    <a target="_blank" href="http://#{parseUrl service.key_}">http://{parseUrl service.key_}</a> <br />
     <div className='lastChecked'>Last checked: <TimeAgo date={new Date(TimeSync.serverTime(service.updatedOn))} /></div>
     <a className="externalLink" href={service.zabbixUrl} target='_blank'><i className="material-icons">open_in_new</i></a>
   </div>
